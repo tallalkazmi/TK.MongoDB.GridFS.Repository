@@ -11,19 +11,28 @@ namespace TK.MongoDB.GridFS.Test
     {
         public UnitTest()
         {
-            Settings.Configure("MongoDocConnection", 2097152);
+            //Settings.Configure(2097152);
+            //Settings.Configure(connectionStringSettingName: "MongoDocConnection");
+            Settings.Configure(2097152, "MongoDocConnection");
         }
 
+        //Get
         [TestMethod]
-        public void GetImage()
+        public void GetImageById()
         {
             FileRepository<Image> imgRepository = new FileRepository<Image>();
-            //var file = imgRepository.GetById("5c63cb9998d2c42d405279fa").Result;
-            var file = imgRepository.GetByFileName("Omega1.png");
+            var file = imgRepository.GetById("5c63cb9998d2c42d405279fa");
         }
 
+        public void GetImageByFilename()
+        {
+            FileRepository<Image> imgRepository = new FileRepository<Image>();
+            var file = imgRepository.GetByFilename("Omega1.png");
+        }
+
+        //Insert
         [TestMethod]
-        public void UploadDocument()
+        public void InsertDocument()
         {
             byte[] fileContent = File.ReadAllBytes("../../Files/sample.pdf");
             Document doc = new Document()
@@ -34,11 +43,12 @@ namespace TK.MongoDB.GridFS.Test
             };
 
             FileRepository<Document> docRepository = new FileRepository<Document>();
-            var id = docRepository.Insert(doc);
+            string Id = docRepository.Insert(doc);
+            Console.WriteLine($"Inserted document Id: {Id}");
         }
 
         [TestMethod]
-        public void UploadImage()
+        public void InsertImage()
         {
             byte[] fileContent = File.ReadAllBytes("../../Files/Omega.png");
 
@@ -59,11 +69,12 @@ namespace TK.MongoDB.GridFS.Test
             };
 
             FileRepository<Image> imgRepository = new FileRepository<Image>();
-            var id = imgRepository.Insert(img);
+            string Id = imgRepository.Insert(img);
+            Console.WriteLine($"Inserted document Id: {Id}");
         }
 
         [TestMethod]
-        public void UploadPicture()
+        public void InsertPicture()
         {
             byte[] fileContent = File.ReadAllBytes("../../Files/Omega.png");
 
@@ -85,7 +96,16 @@ namespace TK.MongoDB.GridFS.Test
             };
 
             FileRepository<Picture> imgRepository = new FileRepository<Picture>();
-            var id = imgRepository.Insert(pic);
+            string Id = imgRepository.Insert(pic);
+            Console.WriteLine($"Inserted document Id: {Id}");
+        }
+
+        //Delete
+        [TestMethod]
+        public void DeleteImage()
+        {
+            FileRepository<Image> imgRepository = new FileRepository<Image>();
+            imgRepository.Delete("5c63cb9998d2c42d405279fa");
         }
     }
 }
