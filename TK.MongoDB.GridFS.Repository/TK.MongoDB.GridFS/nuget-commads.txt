@@ -1,0 +1,2 @@
+1. .\nuget.exe spec .\Mongo.GridFs.csproj
+2. .\nuget.exe pack -Prop Configuration=Release

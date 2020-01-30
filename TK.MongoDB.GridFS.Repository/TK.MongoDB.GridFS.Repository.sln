@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TK.MongoDB.GridFS", "TK.MongoDB.GridFS\TK.MongoDB.GridFS.csproj", "{87948E13-0B71-4B57-96CC-620352C48DE8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TK.MongoDB.GridFS.Test", "TK.MongoDB.GridFS.Test\TK.MongoDB.GridFS.Test.csproj", "{6A7A8BB1-D8B2-4B9D-B526-3778D5EAA667}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{87948E13-0B71-4B57-96CC-620352C48DE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87948E13-0B71-4B57-96CC-620352C48DE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87948E13-0B71-4B57-96CC-620352C48DE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87948E13-0B71-4B57-96CC-620352C48DE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A7A8BB1-D8B2-4B9D-B526-3778D5EAA667}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A7A8BB1-D8B2-4B9D-B526-3778D5EAA667}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A7A8BB1-D8B2-4B9D-B526-3778D5EAA667}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A7A8BB1-D8B2-4B9D-B526-3778D5EAA667}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8E3A1F74-D1E3-4016-B4ED-77A9160703A0}
+	EndGlobalSection
+EndGlobal
