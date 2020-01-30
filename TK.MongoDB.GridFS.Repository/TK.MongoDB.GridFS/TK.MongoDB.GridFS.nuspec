@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>Tallal Kazmi</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/tallalkazmi/TK.MongoDB.GridFS.Repository</projectUrl>
+    <description>$description$</description>
+    <releaseNotes>Initial release</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>repository gridfs mongodb .net</tags>
+  </metadata>
+</package>
