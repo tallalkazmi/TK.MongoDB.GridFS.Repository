@@ -36,7 +36,7 @@ namespace TK.MongoDB.GridFS.Repository
         /// </summary>
         /// <param name="filename">Document filename</param>
         /// <returns>Matching documents</returns>
-        IEnumerable<T> GetByFileName(string filename);
+        IEnumerable<T> GetByFilename(string filename);
         
         /// <summary>
         /// Deletes a single document by id

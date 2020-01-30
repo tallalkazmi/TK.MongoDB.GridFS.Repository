@@ -165,7 +165,7 @@ namespace TK.MongoDB.GridFS.Repository
         /// </summary>
         /// <param name="filename">Document filename</param>
         /// <returns>Matching documents</returns>
-        public IEnumerable<T> GetByFileName(string filename)
+        public IEnumerable<T> GetByFilename(string filename)
         {
             var _props = ObjectProps.Where(p => !BaseObjectProps.Any(bp => bp.Name == p.Name));
             List<T> returnList = new List<T>();
