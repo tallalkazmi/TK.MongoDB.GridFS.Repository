@@ -4,13 +4,13 @@ Repository pattern implementation of MongoDB GridFS in .NET Framework
 ## Usage
 #### Settings
 
-1. Default $BucketChunkSizeBytes$ is set to 2097152 bytes or 2 MiB, but you can configure this by calling a static method as below:
+1. Default `BucketChunkSizeBytes` is set to 2097152 bytes or 2 MiB, but you can configure this by calling a static method as below:
 
    ```c#
    Settings.Configure(2097152);
    ```
 
-2. Default $ConnectionStringSettingName$ is set to "*MongoDocConnection*", but you can configure this by calling a static method as below:
+2. Default `ConnectionStringSettingName` is set to "*MongoDocConnection*", but you can configure this by calling a static method as below:
 
    ```c#
    Settings.Configure(connectionStringSettingName: "MongoDocConnection");
