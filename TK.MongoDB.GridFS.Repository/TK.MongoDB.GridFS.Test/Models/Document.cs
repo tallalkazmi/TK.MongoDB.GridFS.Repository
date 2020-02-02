@@ -1,20 +1,10 @@
 ﻿using TK.MongoDB.GridFS.Models;
-using System;
+using MongoDB.Bson;
 
 namespace TK.MongoDB.GridFS.Test.Models
 {
-    public class Document : IBaseFile
+    public class Document : BaseFile<ObjectId>
     {
-        public string Id { get; set; }
-
-        public string ContentType { get; set; }
-
-        public long ContentLength { get; set; }
-
-        public string Filename { get; set; }
-
-        public byte[] Content { get; set; }
-
-        public DateTime UploadDate { get; set; }
+        public bool isPrivate { get; set; }
     }
 }

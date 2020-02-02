@@ -7,8 +7,7 @@ using System.Collections.Generic;
 
 namespace TK.MongoDB.GridFS.Repository
 {
-    public interface IFileRepository<T> : IDisposable
-        where T : class, IBaseFile
+    public interface IFileRepository<T> : IDisposable where T : BaseFile<ObjectId>
     {
         /// <summary>
         /// Resets/Initializes Bucket
@@ -17,39 +16,39 @@ namespace TK.MongoDB.GridFS.Repository
         void InitBucket();
 
         /// <summary>
-        /// Gets all documents
+        /// Gets all files
         /// </summary>
         /// <param name="condition">Search filter</param>
         /// <param name="options">Search options</param>
-        /// <returns>Matching documents</returns>
+        /// <returns>Matching files</returns>
         IEnumerable<T> Get(FilterDefinition<GridFSFileInfo<ObjectId>> condition, GridFSFindOptions options = null);
-        
+
         /// <summary>
-        /// Gets a single document by id
+        /// Gets a single file by Id
         /// </summary>
-        /// <param name="id">ObjectId as string</param>
-        /// <returns>Matching document</returns>
-        T GetById(string id);
-        
+        /// <param name="id">ObjectId</param>
+        /// <returns>Matching file</returns>
+        T Get(ObjectId id);
+
         /// <summary>
-        /// Gets all documents with specified filename
+        /// Gets all file with specified filename
         /// </summary>
-        /// <param name="filename">Document filename</param>
-        /// <returns>Matching documents</returns>
-        IEnumerable<T> GetByFilename(string filename);
-        
+        /// <param name="filename">Filename</param>
+        /// <returns>Matching files</returns>
+        IEnumerable<T> Get(string filename);
+
         /// <summary>
-        /// Deletes a single document by id
+        /// Inserts a single file
         /// </summary>
-        /// <param name="id">ObjectId as string</param>
-        /// <returns></returns>
-        void Delete(string id);
-        
-        /// <summary>
-        /// Inserts a single document
-        /// </summary>
-        /// <param name="obj">Document object</param>
-        /// <returns>Inserted document's ObjectId as string</returns>
+        /// <param name="obj">File object</param>
+        /// <returns>Inserted file's ObjectId</returns>
         string Insert(T obj);
+
+        /// <summary>
+        /// Deletes a single file by Id
+        /// </summary>
+        /// <param name="id">ObjectId</param>
+        /// <returns></returns>
+        void Delete(ObjectId id);
     }
 }
