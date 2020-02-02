@@ -2,17 +2,9 @@
 {
     public class Settings
     {
-        protected static string ConnectionStringSettingName;
-        protected static int BucketChunkSizeBytes;
-        /// <summary>
-        /// Default settings
-        /// </summary>
-        public Settings()
-        {
-            ConnectionStringSettingName = "MongoDocConnection";
-            BucketChunkSizeBytes = 2097152; //2MB
-        }
-
+        protected static string ConnectionStringSettingName = "MongoDocConnection";
+        protected static int BucketChunkSizeBytes = 2097152; //2MB
+        
         /// <summary>
         /// Configure connection string and bucket chunk size
         /// </summary>

@@ -12,8 +12,7 @@ using System.Text.RegularExpressions;
 
 namespace TK.MongoDB.GridFS.Repository
 {
-    public class FileRepository<T> : Settings, IFileRepository<T>
-        where T : class, IBaseFile
+    public class FileRepository<T> : Settings, IFileRepository<T> where T : BaseFile<ObjectId>
     {
         protected MongoDbContext Context;
         protected string BucketName { get; private set; }
@@ -41,7 +40,7 @@ namespace TK.MongoDB.GridFS.Repository
                 });
             }
 
-            BaseObjectType = typeof(IBaseFile);
+            BaseObjectType = typeof(BaseFile<ObjectId>);
             ObjectType = typeof(T);
             if (ObjectType.IsGenericType && ObjectType.GetGenericTypeDefinition() == typeof(Nullable<>))
                 ObjectType = ObjectType.GenericTypeArguments[0];
@@ -60,11 +59,11 @@ namespace TK.MongoDB.GridFS.Repository
         }
 
         /// <summary>
-        /// Gets all documents
+        /// Gets all files
         /// </summary>
         /// <param name="condition">Search filter</param>
         /// <param name="options">Search options</param>
-        /// <returns>Matching documents</returns>
+        /// <returns>Matching files</returns>
         public IEnumerable<T> Get(FilterDefinition<GridFSFileInfo<ObjectId>> condition, GridFSFindOptions options = null)
         {
             var _props = ObjectProps.Where(p => !BaseObjectProps.Any(bp => bp.Name == p.Name));
@@ -77,11 +76,12 @@ namespace TK.MongoDB.GridFS.Repository
                 {
                     BsonDocument meta = file.Metadata;
                     T returnObject = (T)Activator.CreateInstance(ObjectType);
-                    returnObject.Id = file.Id.ToString();
+                    returnObject.Id = file.Id;
                     returnObject.Filename = file.Filename;
                     returnObject.Content = Bucket.DownloadAsBytes(file.Id);
                     returnObject.ContentLength = (long)BsonValueConversion.Convert(meta?.GetElement("ContentLength").Value);
                     returnObject.ContentType = (string)BsonValueConversion.Convert(meta?.GetElement("ContentType").Value);
+                    returnObject.UploadDateTime = file.UploadDateTime;
 
                     foreach (var prop in _props)
                     {
@@ -98,14 +98,12 @@ namespace TK.MongoDB.GridFS.Repository
         }
 
         /// <summary>
-        /// Gets a single document by id
+        /// Gets a single file by Id
         /// </summary>
-        /// <param name="id">ObjectId as string</param>
-        /// <returns>Matching document</returns>
-        public T GetById(string id)
-        {
-            ObjectId id_ = new ObjectId(id);
-            
+        /// <param name="id">ObjectId</param>
+        /// <returns>Matching file</returns>
+        public T Get(ObjectId id)
+        {            
             //Search filters
             //IGridFSBucket bucket;
             //var filter = Builders<GridFSFileInfo>.Filter.And(
@@ -120,7 +118,7 @@ namespace TK.MongoDB.GridFS.Repository
             //};
 
             //Get file information
-            var filter = Builders<GridFSFileInfo>.Filter.Eq("_id", id_);
+            var filter = Builders<GridFSFileInfo>.Filter.Eq("_id", id);
             using (var cursor = Bucket.Find(filter))
             {
                 //fileInfo either has the matching file information or is null
@@ -129,10 +127,10 @@ namespace TK.MongoDB.GridFS.Repository
                 {
                     BsonDocument meta = fileInfo.Metadata;
                     T returnObject = (T)Activator.CreateInstance(ObjectType);
-                    returnObject.Id = fileInfo.Id.ToString();
+                    returnObject.Id = fileInfo.Id;
                     returnObject.Filename = fileInfo.Filename;
-                    returnObject.Content = Bucket.DownloadAsBytes(id_);
-
+                    returnObject.Content = Bucket.DownloadAsBytes(id);
+                    returnObject.UploadDateTime = fileInfo.UploadDateTime;
 
                     bool? elementFound = meta?.TryGetElement("ContentLength", out BsonElement element);
                     if (elementFound.HasValue && elementFound.Value)
@@ -155,17 +153,17 @@ namespace TK.MongoDB.GridFS.Repository
                 }
                 else
                 {
-                    throw new FileNotFoundException($"File Id '{id_}' was not found in the store");
+                    throw new FileNotFoundException($"File Id '{id}' was not found in the store");
                 }
             }
         }
 
         /// <summary>
-        /// Gets all documents with specified filename
+        /// Gets all file with specified filename
         /// </summary>
-        /// <param name="filename">Document filename</param>
-        /// <returns>Matching documents</returns>
-        public IEnumerable<T> GetByFilename(string filename)
+        /// <param name="filename">Filename</param>
+        /// <returns>Matching files</returns>
+        public IEnumerable<T> Get(string filename)
         {
             var _props = ObjectProps.Where(p => !BaseObjectProps.Any(bp => bp.Name == p.Name));
             List<T> returnList = new List<T>();
@@ -178,9 +176,10 @@ namespace TK.MongoDB.GridFS.Repository
                 {
                     BsonDocument meta = file.Metadata;
                     T returnObject = (T)Activator.CreateInstance(ObjectType);
-                    returnObject.Id = file.Id.ToString();
+                    returnObject.Id = file.Id;
                     returnObject.Filename = file.Filename;
                     returnObject.Content = Bucket.DownloadAsBytes(file.Id);
+                    returnObject.UploadDateTime = file.UploadDateTime;
 
                     bool? elementFound = meta?.TryGetElement("ContentLength", out BsonElement element);
                     if (elementFound.HasValue && elementFound.Value)
@@ -205,27 +204,10 @@ namespace TK.MongoDB.GridFS.Repository
         }
 
         /// <summary>
-        /// Deletes a single document by id
+        /// Inserts a single file
         /// </summary>
-        /// <param name="id">ObjectId as string</param>
-        /// <returns></returns>
-        public void Delete(string id)
-        {
-            ObjectId id_ = new ObjectId(id);
-            var filter = Builders<GridFSFileInfo>.Filter.Eq("_id", id_);
-            var cursor = Bucket.Find(filter);
-            var fileInfo = cursor.FirstOrDefault();
-            if (fileInfo == null)
-                throw new FileNotFoundException($"File Id '{id_}' was not found in the store");
-
-            Bucket.Delete(id_);
-        }
-
-        /// <summary>
-        /// Inserts a single document
-        /// </summary>
-        /// <param name="obj">Document object</param>
-        /// <returns>Inserted document's ObjectId as string</returns>
+        /// <param name="obj">File object</param>
+        /// <returns>Inserted file's ObjectId</returns>
         public string Insert(T obj)
         {
             if (string.IsNullOrWhiteSpace(obj.Filename))
@@ -269,6 +251,22 @@ namespace TK.MongoDB.GridFS.Repository
             IGridFSBucket bucket = Bucket;
             var FileId = bucket.UploadFromBytes(obj.Filename, obj.Content, options);
             return FileId.ToString();
+        }
+
+        /// <summary>
+        /// Deletes a single file by Id
+        /// </summary>
+        /// <param name="id">ObjectId</param>
+        /// <returns></returns>
+        public void Delete(ObjectId id)
+        {
+            var filter = Builders<GridFSFileInfo>.Filter.Eq("_id", id);
+            var cursor = Bucket.Find(filter);
+            var fileInfo = cursor.FirstOrDefault();
+            if (fileInfo == null)
+                throw new FileNotFoundException($"File Id '{id}' was not found in the store");
+
+            Bucket.Delete(id);
         }
 
         public void Dispose()
