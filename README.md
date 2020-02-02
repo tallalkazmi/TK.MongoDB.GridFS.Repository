@@ -24,66 +24,67 @@ Repository pattern implementation of MongoDB GridFS in .NET Framework
 
 #### Models
 
-Create a document model implementing $IBaseFile$ to use in repository. The name of this model will be used for bucket name in MongoDB.
+Create a document model implementing $BaseFile$ to use in repository. The name of this model will be used as bucket name in MongoDB.
 
 ```c#
-public class Image : IBaseFile
+public class Image : BaseFile<ObjectId>
 {
-    public string Id { get; set; }
-    public string Filename { get; set; }
-    public byte[] Content { get; set; }
-    public string ContentType { get; set; }
-    public string Dimensions { get; set; }
-    public long ContentLength { get; set; }
+    public bool isDisplay { get; set; }
 }
 ```
 
 #### Repository methods
 
-1. Get file by Id
+1. Get (by Filter Definition)
 
    ```c#
-   FileRepository<Image> imgRepository = new FileRepository<Image>();
-   var file = imgRepository.GetById("5c63cb9998d2c42d405279fa").Result;
+   //Search filters
+   var filter = Builders<GridFSFileInfo<ObjectId>>.Filter.And(
+                   Builders<GridFSFileInfo<ObjectId>>.Filter.Eq(x => x.Filename, "securityvideo"),
+                   Builders<GridFSFileInfo<ObjectId>>.Filter.Gte(x => x.UploadDateTime, new DateTime(2015, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
+                   Builders<GridFSFileInfo<ObjectId>>.Filter.Lt(x => x.UploadDateTime, new DateTime(2015, 2, 1, 0, 0, 0, DateTimeKind.Utc)));
+   
+   var sort = Builders<GridFSFileInfo>.Sort.Descending(x => x.UploadDateTime);
+   var options = new GridFSFindOptions
+   {
+       Limit = 1,
+       Sort = sort
+   };
+   
+   IEnumerable<Image> files = imgRepository.Get(filter, options);
    ```
 
-2. Get file by filename
+2. Get (by Id)
 
    ```c#
-   FileRepository<Image> imgRepository = new FileRepository<Image>();
-   var file = imgRepository.GetByFileName("Omega1.png");
+   Image file = imgRepository.Get(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
    ```
+   
+3. Get (by Filename)
 
-3. Insert
+   ```c#
+   IEnumerable<Image> files = imgRepository.Get("Omega1.png");
+   ```
+   
+4. Insert
 
    ```c#
    byte[] fileContent = File.ReadAllBytes("../../Files/Omega.png");
-   
-   string Dimensions = null;
-   using (MemoryStream ms = new MemoryStream(fileContent))
-   {
-       using (System.Drawing.Image _img = System.Drawing.Image.FromStream(ms))
-       {
-           Dimensions = $"{_img.Width} x {_img.Height}";
-       }
-   }
    
    Image img = new Image()
    {
        Filename = "Omega.png",
        Content = fileContent,
-       Dimensions = Dimensions
+       isDisplay = false
    };
    
-   FileRepository<Image> imgRepository = new FileRepository<Image>();
-   var id = imgRepository.Insert(img);
+   string id = imgRepository.Insert(img);
    ```
 
-4. Delete
+5. Delete
 
    ```c#
-   FileRepository<Image> imgRepository = new FileRepository<Image>();
-   imgRepository.Delete("5c63cb9998d2c42d405279fa");
+   imgRepository.Delete(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
    ```
 
 #### Tests
