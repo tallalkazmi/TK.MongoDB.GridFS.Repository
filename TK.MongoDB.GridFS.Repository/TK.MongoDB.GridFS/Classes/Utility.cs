@@ -44,9 +44,9 @@ namespace TK.MongoDB.GridFS.Classes
         {
             if (bsonValue.IsString)
                 return System.Convert.ToString(bsonValue);
-            if (bsonValue.IsInt32)
-                return System.Convert.ToInt32(bsonValue);
-            if (bsonValue.IsInt64 || bsonValue.IsDouble)
+            //if (bsonValue.IsInt32)
+            //    return System.Convert.ToInt32(bsonValue);
+            if (bsonValue.IsInt32 || bsonValue.IsInt64 || bsonValue.IsDouble)
                 return System.Convert.ToInt64(bsonValue);
             if (bsonValue.IsBoolean)
                 return System.Convert.ToBoolean(bsonValue);

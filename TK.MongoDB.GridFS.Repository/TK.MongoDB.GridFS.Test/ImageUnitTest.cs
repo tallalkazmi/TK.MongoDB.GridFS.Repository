@@ -24,31 +24,25 @@ namespace TK.MongoDB.GridFS.Test
         [TestMethod]
         public void Get()
         {
-            //Search filters
-            var filter = Builders<GridFSFileInfo<ObjectId>>.Filter.And(
-                Builders<GridFSFileInfo<ObjectId>>.Filter.Eq(x => x.Filename, "securityvideo"),
-                Builders<GridFSFileInfo<ObjectId>>.Filter.Gte(x => x.UploadDateTime, new DateTime(2015, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
-                Builders<GridFSFileInfo<ObjectId>>.Filter.Lt(x => x.UploadDateTime, new DateTime(2015, 2, 1, 0, 0, 0, DateTimeKind.Utc)));
-
-            var sort = Builders<GridFSFileInfo>.Sort.Descending(x => x.UploadDateTime);
-
-            var options = new GridFSFindOptions
-            {
-                Limit = 1,
-                Sort = sort
-            };
-
-            IEnumerable<Image> files = imgRepository.Get(filter, options);
+            IEnumerable<Image> files = imgRepository.Get(x => x.Filename.Contains("Omega") && x.UploadDateTime < DateTime.UtcNow.AddDays(-1));
             Console.WriteLine($"Output:\n{string.Join(", ", files.Select(x => x.Filename))}");
         }
 
         [TestMethod]
         public void GetById()
         {
-            Image file = imgRepository.Get(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
-            Console.WriteLine($"Output:\n{file.Filename}");
+            try
+            {
+                Image file = imgRepository.Get(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
+                Console.WriteLine($"Output:\n{file.Filename}");
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine($"Output:\n{ex.Message}");
+            }
         }
 
+        [TestMethod]
         public void GetByFilename()
         {
             IEnumerable<Image> files = imgRepository.Get("Omega1.png");
@@ -59,9 +53,10 @@ namespace TK.MongoDB.GridFS.Test
         public void Insert()
         {
             byte[] fileContent = File.ReadAllBytes("../../Files/Omega.png");
+            DateTime now = DateTime.UtcNow;
             Image img = new Image()
             {
-                Filename = "Omega.png",
+                Filename = $"Omega-{now.Year}{now.Month.ToString("D2")}{now.Day.ToString("D2")}.png",
                 Content = fileContent,
                 isDisplay = false
             };
@@ -71,9 +66,22 @@ namespace TK.MongoDB.GridFS.Test
         }
 
         [TestMethod]
+        public void Rename()
+        {
+            imgRepository.Rename(new ObjectId("5e37cdcf98d2c12ba0231fbb"), "Omega-new.png");
+        }
+
+        [TestMethod]
         public void Delete()
         {
-            imgRepository.Delete(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
+            try
+            {
+                imgRepository.Delete(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine($"Output:\n{ex.Message}");
+            }
         }
     }
 }
