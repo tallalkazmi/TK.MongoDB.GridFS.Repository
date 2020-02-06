@@ -133,10 +133,8 @@ namespace TK.MongoDB.GridFS.Repository
 
                     bool? elementFound = meta?.TryGetElement("ContentLength", out BsonElement element);
                     if (elementFound.HasValue && elementFound.Value)
-                    {
-                        var _ConvertedCL = (int)BsonValueConversion.Convert(element.Value);
-                        returnObject.ContentLength = _ConvertedCL;
-                    }
+                        returnObject.ContentLength = (long)BsonValueConversion.Convert(element.Value);
+
                     returnObject.ContentType = (string)BsonValueConversion.Convert(meta?.GetElement("ContentType").Value);
 
                     var _props = ObjectProps.Where(p => !BaseObjectProps.Any(bp => bp.Name == p.Name));
@@ -184,10 +182,8 @@ namespace TK.MongoDB.GridFS.Repository
 
                 bool? elementFound = meta?.TryGetElement("ContentLength", out BsonElement element);
                 if (elementFound.HasValue && elementFound.Value)
-                {
-                    var _ConvertedCL = (int)BsonValueConversion.Convert(element.Value);
-                    returnObject.ContentLength = _ConvertedCL;
-                }
+                    returnObject.ContentLength = (long)BsonValueConversion.Convert(element.Value);
+
                 returnObject.ContentType = (string)BsonValueConversion.Convert(meta?.GetElement("ContentType").Value);
 
                 foreach (var prop in _props)
@@ -232,10 +228,8 @@ namespace TK.MongoDB.GridFS.Repository
 
                 bool? elementFound = meta?.TryGetElement("ContentLength", out BsonElement element);
                 if (elementFound.HasValue && elementFound.Value)
-                {
-                    var _ConvertedCL = (int)BsonValueConversion.Convert(element.Value);
-                    returnObject.ContentLength = _ConvertedCL;
-                }
+                    returnObject.ContentLength = (long)BsonValueConversion.Convert(element.Value);
+                
                 returnObject.ContentType = (string)BsonValueConversion.Convert(meta?.GetElement("ContentType").Value);
 
                 foreach (var prop in _props)
