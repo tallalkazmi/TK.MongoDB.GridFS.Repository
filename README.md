@@ -24,7 +24,7 @@ Repository pattern implementation of MongoDB GridFS in .NET Framework
 
 #### Models
 
-Create a document model implementing $BaseFile$ to use in repository. The name of this model will be used as bucket name in MongoDB.
+Create a document model by inheriting `abstract` class `BaseFile​` of type `ObjectId` to use in repository. The name of this model will be used as bucket name in MongoDB.
 
 ```c#
 public class Image : BaseFile<ObjectId>
@@ -35,29 +35,24 @@ public class Image : BaseFile<ObjectId>
 
 #### Repository methods
 
-1. Get (by Filter Definition)
+1. Get (by Lamda Expression)
 
    ```c#
-   //Search filters
-   var filter = Builders<GridFSFileInfo<ObjectId>>.Filter.And(
-                   Builders<GridFSFileInfo<ObjectId>>.Filter.Eq(x => x.Filename, "securityvideo"),
-                   Builders<GridFSFileInfo<ObjectId>>.Filter.Gte(x => x.UploadDateTime, new DateTime(2015, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
-                   Builders<GridFSFileInfo<ObjectId>>.Filter.Lt(x => x.UploadDateTime, new DateTime(2015, 2, 1, 0, 0, 0, DateTimeKind.Utc)));
-   
-   var sort = Builders<GridFSFileInfo>.Sort.Descending(x => x.UploadDateTime);
-   var options = new GridFSFindOptions
-   {
-       Limit = 1,
-       Sort = sort
-   };
-   
-   IEnumerable<Image> files = imgRepository.Get(filter, options);
+   IEnumerable<Image> files = imgRepository.Get(x => x.Filename.Contains("Omega") && x.UploadDateTime < DateTime.UtcNow.AddDays(-1));
    ```
-
+   
 2. Get (by Id)
 
    ```c#
-   Image file = imgRepository.Get(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
+   try
+   {
+       Image file = imgRepository.Get(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
+       Console.WriteLine($"Output:\n{file.Filename}");
+   }
+   catch (FileNotFoundException ex)
+   {
+       Console.WriteLine($"Output:\n{ex.Message}");
+   }
    ```
    
 3. Get (by Filename)
@@ -81,10 +76,23 @@ public class Image : BaseFile<ObjectId>
    string id = imgRepository.Insert(img);
    ```
 
-5. Delete
+5. Rename
 
    ```c#
-   imgRepository.Delete(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
+   imgRepository.Rename(new ObjectId("5e37cdcf98d2c12ba0231fbb"), "Omega-new.png");
+   ```
+   
+6. Delete
+
+   ```c#
+   try
+   {
+       imgRepository.Delete(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
+   }
+   catch (FileNotFoundException ex)
+   {
+       Console.WriteLine($"Output:\n{ex.Message}");
+   }
    ```
 
 #### Tests
