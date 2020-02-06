@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Linq.Expressions;
 
 namespace TK.MongoDB.GridFS.Repository
 {
@@ -61,38 +62,36 @@ namespace TK.MongoDB.GridFS.Repository
         /// <summary>
         /// Gets all files
         /// </summary>
-        /// <param name="condition">Search filter</param>
-        /// <param name="options">Search options</param>
+        /// <param name="condition">Lamda expression</param>
         /// <returns>Matching files</returns>
-        public IEnumerable<T> Get(FilterDefinition<GridFSFileInfo<ObjectId>> condition, GridFSFindOptions options = null)
+        public IEnumerable<T> Get(Expression<Func<GridFSFileInfo<ObjectId>, bool>> condition)
         {
             var _props = ObjectProps.Where(p => !BaseObjectProps.Any(bp => bp.Name == p.Name));
             List<T> returnList = new List<T>();
-            using (var cursor = Bucket.Find(condition, options))
+
+            var sort = Builders<GridFSFileInfo>.Sort.Descending(x => x.UploadDateTime);
+            var files = Bucket.Find(condition, new GridFSFindOptions { Sort = sort }).ToList();
+
+            foreach (var file in files)
             {
-                //fileInfo either has the matching file information or is null
-                var files = cursor.ToList();
-                foreach (var file in files)
+                BsonDocument meta = file.Metadata;
+                T returnObject = (T)Activator.CreateInstance(ObjectType);
+                returnObject.Id = file.Id;
+                returnObject.Filename = file.Filename;
+                returnObject.Content = Bucket.DownloadAsBytes(file.Id);
+                returnObject.ContentLength = (long)BsonValueConversion.Convert(meta?.GetElement("ContentLength").Value);
+                returnObject.ContentType = (string)BsonValueConversion.Convert(meta?.GetElement("ContentType").Value);
+                returnObject.UploadDateTime = file.UploadDateTime;
+
+                foreach (var prop in _props)
                 {
-                    BsonDocument meta = file.Metadata;
-                    T returnObject = (T)Activator.CreateInstance(ObjectType);
-                    returnObject.Id = file.Id;
-                    returnObject.Filename = file.Filename;
-                    returnObject.Content = Bucket.DownloadAsBytes(file.Id);
-                    returnObject.ContentLength = (long)BsonValueConversion.Convert(meta?.GetElement("ContentLength").Value);
-                    returnObject.ContentType = (string)BsonValueConversion.Convert(meta?.GetElement("ContentType").Value);
-                    returnObject.UploadDateTime = file.UploadDateTime;
+                    var data = meta?.GetElement(prop.Name).Value;
+                    if (data == null) continue;
 
-                    foreach (var prop in _props)
-                    {
-                        var data = meta?.GetElement(prop.Name).Value;
-                        if (data == null) continue;
-
-                        var value = BsonValueConversion.Convert(data);
-                        prop.SetValue(returnObject, value);
-                    }
-                    returnList.Add(returnObject);
+                    var value = BsonValueConversion.Convert(data);
+                    prop.SetValue(returnObject, value);
                 }
+                returnList.Add(returnObject);
             }
             return returnList;
         }
@@ -167,38 +166,87 @@ namespace TK.MongoDB.GridFS.Repository
         {
             var _props = ObjectProps.Where(p => !BaseObjectProps.Any(bp => bp.Name == p.Name));
             List<T> returnList = new List<T>();
-            var filter = Builders<GridFSFileInfo>.Filter.Eq(x => x.Filename, filename);
-            using (var cursor = Bucket.Find(filter))
+
+            var builder = Builders<GridFSFileInfo>.Filter;
+            var filter = builder.Eq(x => x.Filename, filename);
+
+            var sort = Builders<GridFSFileInfo>.Sort.Descending(x => x.UploadDateTime);
+            var files = Bucket.Find(filter, new GridFSFindOptions { Sort = sort }).ToList();
+            
+            foreach (var file in files)
             {
-                //fileInfo either has the matching file information or is null
-                var files = cursor.ToList();
-                foreach (var file in files)
+                BsonDocument meta = file.Metadata;
+                T returnObject = (T)Activator.CreateInstance(ObjectType);
+                returnObject.Id = file.Id;
+                returnObject.Filename = file.Filename;
+                returnObject.Content = Bucket.DownloadAsBytes(file.Id);
+                returnObject.UploadDateTime = file.UploadDateTime;
+
+                bool? elementFound = meta?.TryGetElement("ContentLength", out BsonElement element);
+                if (elementFound.HasValue && elementFound.Value)
                 {
-                    BsonDocument meta = file.Metadata;
-                    T returnObject = (T)Activator.CreateInstance(ObjectType);
-                    returnObject.Id = file.Id;
-                    returnObject.Filename = file.Filename;
-                    returnObject.Content = Bucket.DownloadAsBytes(file.Id);
-                    returnObject.UploadDateTime = file.UploadDateTime;
-
-                    bool? elementFound = meta?.TryGetElement("ContentLength", out BsonElement element);
-                    if (elementFound.HasValue && elementFound.Value)
-                    {
-                        var _ConvertedCL = (int)BsonValueConversion.Convert(element.Value);
-                        returnObject.ContentLength = _ConvertedCL;
-                    }
-                    returnObject.ContentType = (string)BsonValueConversion.Convert(meta?.GetElement("ContentType").Value);
-
-                    foreach (var prop in _props)
-                    {
-                        var data = meta?.GetElement(prop.Name).Value;
-                        if (data == null) continue;
-
-                        var value = BsonValueConversion.Convert(data);
-                        prop.SetValue(returnObject, value);
-                    }
-                    returnList.Add(returnObject);
+                    var _ConvertedCL = (int)BsonValueConversion.Convert(element.Value);
+                    returnObject.ContentLength = _ConvertedCL;
                 }
+                returnObject.ContentType = (string)BsonValueConversion.Convert(meta?.GetElement("ContentType").Value);
+
+                foreach (var prop in _props)
+                {
+                    var data = meta?.GetElement(prop.Name).Value;
+                    if (data == null) continue;
+
+                    var value = BsonValueConversion.Convert(data);
+                    prop.SetValue(returnObject, value);
+                }
+                returnList.Add(returnObject);
+            }
+            return returnList;
+        }
+
+        /// <summary>
+        /// Gets files with In filter.
+        /// </summary>
+        /// <typeparam name="TField">Field type to search in</typeparam>
+        /// <param name="field">Field name to search in</param>
+        /// <param name="values">Values to search in</param>
+        /// <returns>Matching files</returns>
+        public IEnumerable<T> In<TField>(Expression<Func<GridFSFileInfo, TField>> field, IEnumerable<TField> values) where TField : class
+        {
+            var _props = ObjectProps.Where(p => !BaseObjectProps.Any(bp => bp.Name == p.Name));
+            List<T> returnList = new List<T>();
+
+            var builder = Builders<GridFSFileInfo>.Filter;
+            var filter = builder.In<TField>(field, values);
+
+            var sort = Builders<GridFSFileInfo>.Sort.Descending(x => x.UploadDateTime);
+            var files = Bucket.Find(filter, new GridFSFindOptions { Sort = sort }).ToList();
+
+            foreach (var file in files)
+            {
+                BsonDocument meta = file.Metadata;
+                T returnObject = (T)Activator.CreateInstance(ObjectType);
+                returnObject.Id = file.Id;
+                returnObject.Filename = file.Filename;
+                returnObject.Content = Bucket.DownloadAsBytes(file.Id);
+                returnObject.UploadDateTime = file.UploadDateTime;
+
+                bool? elementFound = meta?.TryGetElement("ContentLength", out BsonElement element);
+                if (elementFound.HasValue && elementFound.Value)
+                {
+                    var _ConvertedCL = (int)BsonValueConversion.Convert(element.Value);
+                    returnObject.ContentLength = _ConvertedCL;
+                }
+                returnObject.ContentType = (string)BsonValueConversion.Convert(meta?.GetElement("ContentType").Value);
+
+                foreach (var prop in _props)
+                {
+                    var data = meta?.GetElement(prop.Name).Value;
+                    if (data == null) continue;
+
+                    var value = BsonValueConversion.Convert(data);
+                    prop.SetValue(returnObject, value);
+                }
+                returnList.Add(returnObject);
             }
             return returnList;
         }
@@ -251,6 +299,20 @@ namespace TK.MongoDB.GridFS.Repository
             IGridFSBucket bucket = Bucket;
             var FileId = bucket.UploadFromBytes(obj.Filename, obj.Content, options);
             return FileId.ToString();
+        }
+
+        /// <summary>
+        /// Renames a file
+        /// </summary>
+        /// <param name="id">Id of the file to rename</param>
+        /// <param name="newFilename">New filename</param>
+        public void Rename(ObjectId id, string newFilename)
+        {
+            bool IsValidFilename = Regex.IsMatch(newFilename, @"^[\w\-. ]+$", RegexOptions.IgnoreCase);
+            if (!IsValidFilename)
+                throw new ArgumentException("Filename", $"File name '{newFilename}' is not of the correct format.");
+
+            Bucket.Rename(id, newFilename);
         }
 
         /// <summary>

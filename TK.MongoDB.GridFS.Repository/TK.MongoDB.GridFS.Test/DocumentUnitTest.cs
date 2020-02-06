@@ -24,8 +24,15 @@ namespace TK.MongoDB.GridFS.Test
         [TestMethod]
         public void GetById()
         {
-            Document file = docRepository.Get(new ObjectId("5e36b5e698d2c103d438e163"));
-            Console.WriteLine($"Output:\n{file.Filename}");
+            try
+            {
+                Document file = docRepository.Get(new ObjectId("5e36b5e698d2c103d438e163"));
+                Console.WriteLine($"Output:\n{file.Filename}");
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine($"Output:\n{ex.Message}");
+            }
         }
 
         [TestMethod]
@@ -53,7 +60,14 @@ namespace TK.MongoDB.GridFS.Test
         [TestMethod]
         public void Delete()
         {
-            docRepository.Delete(new ObjectId("5e36b9d698d2c124886edc67"));
+            try
+            {
+                docRepository.Delete(new ObjectId("5e36b9d698d2c124886edc67"));
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine($"Output:\n{ex.Message}");
+            }
         }
     }
 }
