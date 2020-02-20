@@ -46,11 +46,26 @@ namespace TK.MongoDB.GridFS.Repository
         IEnumerable<T> In<TField>(Expression<Func<GridFSFileInfo, TField>> field, IEnumerable<TField> values) where TField : class;
 
         /// <summary>
+        /// Gets files with In (ObjectId) filter.
+        /// </summary>
+        /// <typeparam name="ObjectId">ObjectId to search in</typeparam>
+        /// <param name="field">Field name to search in</param>
+        /// <param name="values">Values to search in</param>
+        /// <returns>Matching files</returns>
+        IEnumerable<T> InObjectId<ObjectId>(Expression<Func<GridFSFileInfo, ObjectId>> field, IEnumerable<ObjectId> values);
+
+        /// <summary>
         /// Inserts a single file
         /// </summary>
         /// <param name="obj">File object</param>
         /// <returns>Inserted file's ObjectId</returns>
         string Insert(T obj);
+
+        /// <summary>
+        /// Inserts a single file with the <c>ObjectId</c> provided
+        /// </summary>
+        /// <param name="obj">File object</param>
+        void InsertWithId(T obj);
 
         /// <summary>
         /// Renames a file

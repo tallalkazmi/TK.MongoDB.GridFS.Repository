@@ -246,6 +246,52 @@ namespace TK.MongoDB.GridFS.Repository
         }
 
         /// <summary>
+        /// Gets files with In (ObjectId) filter.
+        /// </summary>
+        /// <typeparam name="ObjectId">ObjectId to search in</typeparam>
+        /// <param name="field">Field name to search in</param>
+        /// <param name="values">Values to search in</param>
+        /// <returns>Matching files</returns>
+        public IEnumerable<T> InObjectId<ObjectId>(Expression<Func<GridFSFileInfo, ObjectId>> field, IEnumerable<ObjectId> values)
+        {
+            var _props = ObjectProps.Where(p => !BaseObjectProps.Any(bp => bp.Name == p.Name));
+            List<T> returnList = new List<T>();
+
+            var builder = Builders<GridFSFileInfo>.Filter;
+            var filter = builder.In(field, values);
+
+            var sort = Builders<GridFSFileInfo>.Sort.Descending(x => x.UploadDateTime);
+            var files = Bucket.Find(filter, new GridFSFindOptions { Sort = sort }).ToList();
+
+            foreach (var file in files)
+            {
+                BsonDocument meta = file.Metadata;
+                T returnObject = (T)Activator.CreateInstance(ObjectType);
+                returnObject.Id = file.Id;
+                returnObject.Filename = file.Filename;
+                returnObject.Content = Bucket.DownloadAsBytes(file.Id);
+                returnObject.UploadDateTime = file.UploadDateTime;
+
+                bool? elementFound = meta?.TryGetElement("ContentLength", out BsonElement element);
+                if (elementFound.HasValue && elementFound.Value)
+                    returnObject.ContentLength = (long)BsonValueConversion.Convert(element.Value);
+
+                returnObject.ContentType = (string)BsonValueConversion.Convert(meta?.GetElement("ContentType").Value);
+
+                foreach (var prop in _props)
+                {
+                    var data = meta?.GetElement(prop.Name).Value;
+                    if (data == null) continue;
+
+                    var value = BsonValueConversion.Convert(data);
+                    prop.SetValue(returnObject, value);
+                }
+                returnList.Add(returnObject);
+            }
+            return returnList;
+        }
+
+        /// <summary>
         /// Inserts a single file
         /// </summary>
         /// <param name="obj">File object</param>
@@ -293,6 +339,55 @@ namespace TK.MongoDB.GridFS.Repository
             IGridFSBucket bucket = Bucket;
             var FileId = bucket.UploadFromBytes(obj.Filename, obj.Content, options);
             return FileId.ToString();
+        }
+
+        /// <summary>
+        /// Inserts a single file with the <c>ObjectId</c> provided
+        /// </summary>
+        /// <param name="obj">File object</param>
+        public void InsertWithId(T obj)
+        {
+            if (string.IsNullOrWhiteSpace(obj.Filename))
+                throw new ArgumentNullException("Filename", "File name cannot be null.");
+            if (obj.Content == null || obj.Content.Length == 0)
+                throw new ArgumentNullException("Content", "File content cannot by null or empty.");
+
+            //bool IsValidFilename = Regex.IsMatch(obj.Filename, @"^[\w,\s-]+\.[A-Za-z0-9]+$", RegexOptions.IgnoreCase);
+            bool IsValidFilename = Regex.IsMatch(obj.Filename, @"^[\w\-. ]+$", RegexOptions.IgnoreCase);
+            if (!IsValidFilename)
+                throw new ArgumentException("Filename", $"File name '{obj.Filename}' is not of the correct format.");
+
+            string FileContentType = MimeMappingStealer.GetMimeMapping(obj.Filename);
+            var _props = ObjectProps.Where(p => !BaseObjectProps.Any(bp => bp.Name == p.Name));
+
+            List<KeyValuePair<string, object>> dictionary = new List<KeyValuePair<string, object>>();
+            dictionary.Add(new KeyValuePair<string, object>("ContentType", FileContentType));
+            dictionary.Add(new KeyValuePair<string, object>("ContentLength", obj.Content.Length));
+            foreach (var prop in _props)
+            {
+                if (prop.Name != "ContentType" && prop.Name != "ContentLength")
+                {
+                    object value = prop.GetValue(obj);
+                    dictionary.Add(new KeyValuePair<string, object>(prop.Name, value));
+                }
+            }
+
+            BsonDocument Metadata = new BsonDocument(dictionary);
+
+            //Set upload options
+            var options = new GridFSUploadOptions
+            {
+                Metadata = Metadata,
+#pragma warning disable 618 //Obsolete warning removed
+                //Adding content type here for database viewer. Do not remove.
+                ContentType = FileContentType
+#pragma warning restore 618
+            };
+
+            //Upload file
+            IGridFSBucket bucket = Bucket;
+            Stream stream = new MemoryStream(obj.Content);
+            bucket.UploadFromStream(obj.Id, obj.Filename, stream, options);
         }
 
         /// <summary>
