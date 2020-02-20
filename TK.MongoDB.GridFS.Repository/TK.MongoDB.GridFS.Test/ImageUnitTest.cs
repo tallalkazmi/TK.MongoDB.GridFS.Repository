@@ -66,6 +66,23 @@ namespace TK.MongoDB.GridFS.Test
         }
 
         [TestMethod]
+        public void InsertWithId()
+        {
+            byte[] fileContent = File.ReadAllBytes("../../Files/Omega.png");
+            DateTime now = DateTime.UtcNow;
+            Image img = new Image()
+            {
+                Id = ObjectId.GenerateNewId(),
+                Filename = $"Omega-{now.Year}{now.Month.ToString("D2")}{now.Day.ToString("D2")}.png",
+                Content = fileContent,
+                isDisplay = false
+            };
+
+            imgRepository.InsertWithId(img);
+            Console.WriteLine($"Inserted document Id: {img.Id}");
+        }
+
+        [TestMethod]
         public void Rename()
         {
             imgRepository.Rename(new ObjectId("5e37cdcf98d2c12ba0231fbb"), "Omega-new.png");
