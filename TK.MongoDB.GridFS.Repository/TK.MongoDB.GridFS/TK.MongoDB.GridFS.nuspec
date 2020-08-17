@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>TK.MongoDB.GridFS.Repository</id>
+    <version>$version$</version>
+    <title>TK.MongoDB.GridFS.Repository</title>
+    <authors>Tallal Kazmi</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/tallalkazmi/TK.MongoDB.GridFS.Repository</projectUrl>
+    <description>$description$</description>
+    <releaseNotes>InsertWithId and In (ObjectId) methods added to repository</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>mongodb gridfs repository .net c#</tags>
+  </metadata>
+</package>
