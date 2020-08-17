@@ -36,10 +36,15 @@ namespace TK.MongoDB.GridFS.Classes
     }
 
     /// <summary>
-    /// Convert BsonValue to C# equivalent type
+    /// BsonValue conversion
     /// </summary>
     public static class BsonValueConversion
     {
+        /// <summary>
+        /// Converts BsonValue to C# equivalent type
+        /// </summary>
+        /// <param name="bsonValue">BsonValue</param>
+        /// <returns>C# type</returns>
         public static object Convert(BsonValue bsonValue)
         {
             if (bsonValue.IsString)

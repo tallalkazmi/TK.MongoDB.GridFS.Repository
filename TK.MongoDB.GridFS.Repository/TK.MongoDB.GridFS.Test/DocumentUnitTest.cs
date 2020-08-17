@@ -4,21 +4,16 @@ using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MongoDB.Bson;
-using TK.MongoDB.GridFS.Repository;
 using TK.MongoDB.GridFS.Test.Models;
 
 namespace TK.MongoDB.GridFS.Test
 {
     [TestClass]
-    public class DocumentUnitTest
+    public class DocumentUnitTest : BaseTest
     {
-        readonly FileRepository<Document> docRepository;
         public DocumentUnitTest()
         {
-            //Settings.Configure(2097152);
-            //Settings.Configure(connectionStringSettingName: "MongoDocConnection");
-            Settings.Configure(2097152, "MongoDocConnection");
-            docRepository = new FileRepository<Document>();
+            Settings.ConnectionStringSettingName = "MongoDocConnection";
         }
 
         [TestMethod]
@@ -26,7 +21,7 @@ namespace TK.MongoDB.GridFS.Test
         {
             try
             {
-                Document file = docRepository.Get(new ObjectId("5e36b5e698d2c103d438e163"));
+                Document file = DocumentRepository.Get(new ObjectId("5e36b5e698d2c103d438e163"));
                 Console.WriteLine($"Output:\n{file.Filename}");
             }
             catch (FileNotFoundException ex)
@@ -38,7 +33,7 @@ namespace TK.MongoDB.GridFS.Test
         [TestMethod]
         public void GetByFilename()
         {
-            IEnumerable<Document> files = docRepository.Get("sample.pdf");
+            IEnumerable<Document> files = DocumentRepository.Get("sample.pdf");
             Console.WriteLine($"Output:\n{string.Join(", ", files.Select(x => x.Filename))}");
         }
 
@@ -50,10 +45,10 @@ namespace TK.MongoDB.GridFS.Test
             {
                 Filename = "sample.pdf",
                 Content = fileContent,
-                isPrivate = true
+                IsPrivate = true
             };
 
-            string Id = docRepository.Insert(doc);
+            string Id = DocumentRepository.Insert(doc);
             Console.WriteLine($"Inserted document Id: {Id}");
         }
 
@@ -62,7 +57,7 @@ namespace TK.MongoDB.GridFS.Test
         {
             try
             {
-                docRepository.Delete(new ObjectId("5e36b9d698d2c124886edc67"));
+                DocumentRepository.Delete(new ObjectId("5e36b9d698d2c124886edc67"));
             }
             catch (FileNotFoundException ex)
             {

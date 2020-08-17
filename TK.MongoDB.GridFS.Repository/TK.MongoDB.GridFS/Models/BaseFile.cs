@@ -1,13 +1,17 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using System;
 
 namespace TK.MongoDB.GridFS.Models
 {
-    public abstract class BaseFile<T>
+    /// <summary>
+    /// Abstract base file to derive object classes from. Inherit this class to all classes to be used in as data models.
+    /// </summary>
+    public abstract class BaseFile
     {
         /// <summary>
         /// Primary Key. Generates new <c>ObjectId</c> on insert.
         /// </summary>
-        public T Id { get; set; }
+        public ObjectId Id { get; set; }
         
         /// <summary>
         /// Filename
