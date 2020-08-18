@@ -1,9 +1,16 @@
-﻿using System.Text.RegularExpressions;
+﻿using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
+using System;
+using System.Text.RegularExpressions;
+using TK.MongoDB.GridFS.Models;
 
 namespace TK.MongoDB.GridFS
 {
     /// <summary>
-    /// Settings
+    /// Settings for: <br/>
+    /// 1. GridFs Bucket <br/>
+    /// 2. File name and size validations <br/>
+    /// 3. MongoDb connection string
     /// </summary>
     public class Settings
     {
@@ -11,11 +18,6 @@ namespace TK.MongoDB.GridFS
         /// Connection String name from *.config file. Default value is set to <i>MongoDocConnection</i>.
         /// </summary>
         public static string ConnectionStringSettingName { get; set; } = "MongoDocConnection";
-
-        /// <summary>
-        /// GridFs bucket chunk size in MBs. Default value is set to <i>2 MB</i>.
-        /// </summary>
-        public static int BucketChunkSizeInMBs { get; set; } = 2; //2097152 B
 
         /// <summary>
         /// Validate file name on insert and update from <i>FileNameRegex</i> field. Default value is set to <i>True</i>.
@@ -36,5 +38,26 @@ namespace TK.MongoDB.GridFS
         /// Maximum file size in MBs. Default value is set to <i>5</i>.
         /// </summary>
         public static int MaximumFileSizeInMBs { get; set; } = 5;
+
+        /* Bucket settings */
+        protected internal static int _BucketChunkSizeInMBs = 2; //2097152 B
+        protected internal static IGridFSBucket _Bucket = null;
+
+        /// <summary>
+        /// Configure GridFs bucket chunk size in MBs. Default value is set to <i>2 MB</i>.
+        /// <typeparam name="T">Model of type <b>BaseFile</b>.</typeparam>
+        /// <param name="chunkSize">Chunk size in MBs.</param>
+        /// </summary>
+        public static void Configure<T>(int chunkSize = 2) where T : BaseFile
+        {
+            MongoDbContext Context = new MongoDbContext(ConnectionStringSettingName);
+            _Bucket = new GridFSBucket(Context.Database, new GridFSBucketOptions
+            {
+                BucketName = typeof(T).Name.ToLower(),
+                ChunkSizeBytes = (int)Math.Pow(1024, 2) * chunkSize,
+                WriteConcern = WriteConcern.WMajority,
+                ReadPreference = ReadPreference.Secondary
+            });
+        }
     }
 }

@@ -16,30 +16,29 @@ namespace TK.MongoDB.GridFS.Data
     public class FileRepository<T> : Settings, IFileRepository<T> where T : BaseFile
     {
         private readonly MongoDbContext Context;
-        
-        protected string BucketName { get; private set; }
-        protected IGridFSBucket Bucket { get; set; }
-
         private readonly Type ObjectType;
         private readonly Type BaseObjectType;
         private readonly PropertyInfo[] ObjectProps;
         private readonly PropertyInfo[] BaseObjectProps;
 
+        protected IGridFSBucket Bucket { get; private set; }
+
         public FileRepository()
         {
-            if (Context == null)
-                Context = new MongoDbContext(ConnectionStringSettingName);
-
-            BucketName = typeof(T).Name.ToLower();
+            if (Context == null) Context = new MongoDbContext(ConnectionStringSettingName);
             if (Bucket == null)
             {
-                Bucket = new GridFSBucket(Context.Database, new GridFSBucketOptions
+                if (_Bucket != null) Bucket = _Bucket;
+                else
                 {
-                    BucketName = BucketName,
-                    ChunkSizeBytes = (int)Math.Pow(1024, 2) * BucketChunkSizeInMBs,
-                    WriteConcern = WriteConcern.WMajority,
-                    ReadPreference = ReadPreference.Secondary
-                });
+                    Bucket = new GridFSBucket(Context.Database, new GridFSBucketOptions
+                    {
+                        BucketName = typeof(T).Name.ToLower(),
+                        ChunkSizeBytes = (int)Math.Pow(1024, 2) * _BucketChunkSizeInMBs,
+                        WriteConcern = WriteConcern.WMajority,
+                        ReadPreference = ReadPreference.Secondary
+                    });
+                }
             }
 
             BaseObjectType = typeof(BaseFile);
@@ -284,7 +283,14 @@ namespace TK.MongoDB.GridFS.Data
                 if (!IsValidFilename) throw new ArgumentException("Filename", $"File name '{newFilename}' is not of the correct format.");
             }
 
-            Bucket.Rename(id, newFilename);
+            try
+            {
+                Bucket.Rename(id, newFilename);
+            }
+            catch (GridFSFileNotFoundException fnfex)
+            {
+                throw new FileNotFoundException(fnfex.Message, fnfex);
+            }
         }
 
         public virtual void Delete(ObjectId id)

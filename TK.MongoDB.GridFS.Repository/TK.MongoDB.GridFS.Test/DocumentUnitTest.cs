@@ -14,6 +14,7 @@ namespace TK.MongoDB.GridFS.Test
         public DocumentUnitTest()
         {
             Settings.ConnectionStringSettingName = "MongoDocConnection";
+            Settings.Configure<Document>(2);
         }
 
         [TestMethod]
@@ -22,6 +23,7 @@ namespace TK.MongoDB.GridFS.Test
             try
             {
                 Document file = DocumentRepository.Get(new ObjectId("5e36b5e698d2c103d438e163"));
+                Assert.IsNotNull(file);
                 Console.WriteLine($"Output:\n{file.Filename}");
             }
             catch (FileNotFoundException ex)
@@ -34,7 +36,9 @@ namespace TK.MongoDB.GridFS.Test
         public void GetByFilename()
         {
             IEnumerable<Document> files = DocumentRepository.Get("sample.pdf");
-            Console.WriteLine($"Output:\n{string.Join(", ", files.Select(x => x.Filename))}");
+            Assert.IsNotNull(files);
+
+            Console.WriteLine($"Output:\n{(files.Count() > 0 ? string.Join(", ", files.Select(x => x.Filename)) : "No record found")}");
         }
 
         [TestMethod]
@@ -49,6 +53,9 @@ namespace TK.MongoDB.GridFS.Test
             };
 
             string Id = DocumentRepository.Insert(doc);
+            Assert.AreNotEqual(string.Empty, Id);
+            Assert.AreNotEqual(null, Id);
+
             Console.WriteLine($"Inserted document Id: {Id}");
         }
 
@@ -58,6 +65,7 @@ namespace TK.MongoDB.GridFS.Test
             try
             {
                 DocumentRepository.Delete(new ObjectId("5e36b9d698d2c124886edc67"));
+                Console.WriteLine($"Output:\nFile with Id '5e36b9d698d2c124886edc67' deleted.");
             }
             catch (FileNotFoundException ex)
             {
