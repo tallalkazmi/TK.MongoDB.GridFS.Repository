@@ -10,7 +10,7 @@
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/tallalkazmi/TK.MongoDB.GridFS.Repository</projectUrl>
     <description>$description$</description>
-    <releaseNotes>InsertWithId and In (ObjectId) methods added to repository</releaseNotes>
+    <releaseNotes>Various improvements</releaseNotes>
     <copyright>$copyright$</copyright>
     <tags>mongodb gridfs repository .net c#</tags>
   </metadata>
