@@ -4,23 +4,21 @@ using MongoDB.Driver.GridFS;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using MongoDB.Driver;
 
-namespace TK.MongoDB.GridFS.Repository
+namespace TK.MongoDB.GridFS.Data
 {
-    public interface IFileRepository<T> : IDisposable where T : BaseFile<ObjectId>
+    /// <summary>
+    /// File Repository
+    /// </summary>
+    /// <typeparam name="T">Type of BaseFile</typeparam>
+    public interface IFileRepository<T> : IDisposable where T : BaseFile
     {
         /// <summary>
         /// Resets/Initializes Bucket
         /// </summary>
         /// <returns></returns>
         void InitBucket();
-
-        /// <summary>
-        /// Gets all files
-        /// </summary>
-        /// <param name="condition">Lamda expression</param>
-        /// <returns>Matching files</returns>
-        IEnumerable<T> Get(Expression<Func<GridFSFileInfo<ObjectId>, bool>> condition);
 
         /// <summary>
         /// Gets a single file by Id
@@ -35,6 +33,42 @@ namespace TK.MongoDB.GridFS.Repository
         /// <param name="filename">Filename</param>
         /// <returns>Matching files</returns>
         IEnumerable<T> Get(string filename);
+
+        /// <summary>
+        /// Gets all files
+        /// </summary>
+        /// <param name="condition">Lamda expression</param>
+        /// <returns>Matching files</returns>
+        IEnumerable<T> Get(Expression<Func<GridFSFileInfo<ObjectId>, bool>> condition);
+
+        /// <summary>
+        /// Gets all files
+        /// </summary>
+        /// <param name="filter">Filter definition</param>
+        /// <param name="sort">Sort Definition</param>
+        /// <returns>Matching files</returns>
+        IEnumerable<T> Get(FilterDefinition<GridFSFileInfo> filter, SortDefinition<GridFSFileInfo> sort);
+
+        /// <summary>
+        /// Inserts a single file
+        /// </summary>
+        /// <param name="obj">File object</param>
+        /// <returns>Inserted file's ObjectId</returns>
+        string Insert(T obj);
+
+        /// <summary>
+        /// Renames a file
+        /// </summary>
+        /// <param name="id">Id of the file to rename</param>
+        /// <param name="newFilename">New filename</param>
+        void Rename(ObjectId id, string newFilename);
+
+        /// <summary>
+        /// Deletes a single file by Id
+        /// </summary>
+        /// <param name="id">ObjectId</param>
+        /// <returns></returns>
+        void Delete(ObjectId id);
 
         /// <summary>
         /// Gets files with In filter.
@@ -53,32 +87,5 @@ namespace TK.MongoDB.GridFS.Repository
         /// <param name="values">Values to search in</param>
         /// <returns>Matching files</returns>
         IEnumerable<T> InObjectId<ObjectId>(Expression<Func<GridFSFileInfo, ObjectId>> field, IEnumerable<ObjectId> values);
-
-        /// <summary>
-        /// Inserts a single file
-        /// </summary>
-        /// <param name="obj">File object</param>
-        /// <returns>Inserted file's ObjectId</returns>
-        string Insert(T obj);
-
-        /// <summary>
-        /// Inserts a single file with the <c>ObjectId</c> provided
-        /// </summary>
-        /// <param name="obj">File object</param>
-        void InsertWithId(T obj);
-
-        /// <summary>
-        /// Renames a file
-        /// </summary>
-        /// <param name="id">Id of the file to rename</param>
-        /// <param name="newFilename">New filename</param>
-        void Rename(ObjectId id, string newFilename);
-
-        /// <summary>
-        /// Deletes a single file by Id
-        /// </summary>
-        /// <param name="id">ObjectId</param>
-        /// <returns></returns>
-        void Delete(ObjectId id);
     }
 }

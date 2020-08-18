@@ -3,7 +3,7 @@ using System;
 
 namespace TK.MongoDB.GridFS
 {
-    public class MongoDbContext : IDisposable
+    internal class MongoDbContext : IDisposable
     {
         readonly string DatabaseName;
         MongoClient Client;

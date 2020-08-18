@@ -4,28 +4,25 @@ using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MongoDB.Bson;
-using MongoDB.Driver;
-using MongoDB.Driver.GridFS;
-using TK.MongoDB.GridFS.Repository;
 using TK.MongoDB.GridFS.Test.Models;
 
 namespace TK.MongoDB.GridFS.Test
 {
     [TestClass]
-    public class ImageUnitTest
+    public class ImageUnitTest : BaseTest
     {
-        readonly FileRepository<Image> imgRepository;
         public ImageUnitTest()
         {
-            Settings.Configure(2097152, "MongoDocConnection");
-            imgRepository = new FileRepository<Image>();
+            Settings.ConnectionStringSettingName = "MongoDocConnection";
+            Settings.Configure<Image>(1);
         }
 
         [TestMethod]
         public void Get()
         {
-            IEnumerable<Image> files = imgRepository.Get(x => x.Filename.Contains("Omega") && x.UploadDateTime < DateTime.UtcNow.AddDays(-1));
-            Console.WriteLine($"Output:\n{string.Join(", ", files.Select(x => x.Filename))}");
+            IEnumerable<Image> files = ImageRepository.Get(x => x.Filename.Contains("Omega") && x.UploadDateTime < DateTime.UtcNow.AddDays(-1));
+            Assert.IsNotNull(files);
+            Console.WriteLine($"Output:\n {(files.Count() > 0 ? string.Join(", ", files.Select(x => x.Filename)) : "No record found")}");
         }
 
         [TestMethod]
@@ -33,7 +30,8 @@ namespace TK.MongoDB.GridFS.Test
         {
             try
             {
-                Image file = imgRepository.Get(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
+                Image file = ImageRepository.Get(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
+                Assert.IsNotNull(file);
                 Console.WriteLine($"Output:\n{file.Filename}");
             }
             catch (FileNotFoundException ex)
@@ -45,8 +43,10 @@ namespace TK.MongoDB.GridFS.Test
         [TestMethod]
         public void GetByFilename()
         {
-            IEnumerable<Image> files = imgRepository.Get("Omega1.png");
-            Console.WriteLine($"Output:\n{string.Join(", ", files.Select(x => x.Filename))}");
+            IEnumerable<Image> files = ImageRepository.Get("Omega1.png");
+            Assert.IsNotNull(files);
+
+            Console.WriteLine($"Output:\n{(files.Count() > 0 ? string.Join(", ", files.Select(x => x.Filename)) : "No record found")}");
         }
 
         [TestMethod]
@@ -56,12 +56,15 @@ namespace TK.MongoDB.GridFS.Test
             DateTime now = DateTime.UtcNow;
             Image img = new Image()
             {
-                Filename = $"Omega-{now.Year}{now.Month.ToString("D2")}{now.Day.ToString("D2")}.png",
+                Filename = $"Omega-{now.Year}{now.Month:D2}{now.Day:D2}.png",
                 Content = fileContent,
-                isDisplay = false
+                IsDisplay = false
             };
 
-            string Id = imgRepository.Insert(img);
+            string Id = ImageRepository.Insert(img);
+            Assert.AreNotEqual(string.Empty, Id);
+            Assert.AreNotEqual(null, Id);
+
             Console.WriteLine($"Inserted document Id: {Id}");
         }
 
@@ -73,19 +76,29 @@ namespace TK.MongoDB.GridFS.Test
             Image img = new Image()
             {
                 Id = ObjectId.GenerateNewId(),
-                Filename = $"Omega-{now.Year}{now.Month.ToString("D2")}{now.Day.ToString("D2")}.png",
+                Filename = $"Omega-{now.Year}{now.Month:D2}{now.Day:D2}.png",
                 Content = fileContent,
-                isDisplay = false
+                IsDisplay = false
             };
 
-            imgRepository.InsertWithId(img);
-            Console.WriteLine($"Inserted document Id: {img.Id}");
+            string Id = ImageRepository.Insert(img);
+            Assert.AreNotEqual(string.Empty, Id);
+            Assert.AreNotEqual(null, Id);
+
+            Console.WriteLine($"Inserted document Id: {Id}");
         }
 
         [TestMethod]
         public void Rename()
         {
-            imgRepository.Rename(new ObjectId("5e37cdcf98d2c12ba0231fbb"), "Omega-new.png");
+            try
+            {
+                ImageRepository.Rename(new ObjectId("5e37cdcf98d2c12ba0231fbb"), "Omega-new.png");
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine($"Output:\n{ex.Message}");
+            }
         }
 
         [TestMethod]
@@ -93,7 +106,8 @@ namespace TK.MongoDB.GridFS.Test
         {
             try
             {
-                imgRepository.Delete(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
+                ImageRepository.Delete(new ObjectId("5e36b5a698d2c14fe8b0ecbe"));
+                Console.WriteLine($"Output:\nFile with Id '5e36b5a698d2c14fe8b0ecbe' deleted.");
             }
             catch (FileNotFoundException ex)
             {

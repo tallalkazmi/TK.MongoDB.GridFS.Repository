@@ -1,19 +1,63 @@
-﻿namespace TK.MongoDB.GridFS
+﻿using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
+using System;
+using System.Text.RegularExpressions;
+using TK.MongoDB.GridFS.Models;
+
+namespace TK.MongoDB.GridFS
 {
+    /// <summary>
+    /// Settings for: <br/>
+    /// 1. GridFs Bucket <br/>
+    /// 2. File name and size validations <br/>
+    /// 3. MongoDb connection string
+    /// </summary>
     public class Settings
     {
-        protected static string ConnectionStringSettingName = "MongoDocConnection";
-        protected static int BucketChunkSizeBytes = 2097152; //2MB
-        
         /// <summary>
-        /// Configure connection string and bucket chunk size
+        /// Connection String name from *.config file. Default value is set to <i>MongoDocConnection</i>.
         /// </summary>
-        /// <param name="bucketChunkSizeBytes">GridFs Bucket chunk size. Default is set to 2097152</param>
-        /// <param name="connectionStringSettingName">Connection String name from *.config file</param>
-        public static void Configure(int bucketChunkSizeBytes = 2097152, string connectionStringSettingName = null)
+        public static string ConnectionStringSettingName { get; set; } = "MongoDocConnection";
+
+        /// <summary>
+        /// Validate file name on insert and update from <i>FileNameRegex</i> field. Default value is set to <i>True</i>.
+        /// </summary>
+        public static bool ValidateFileName { get; set; } = true;
+
+        /// <summary>
+        /// Validate file size on insert from <i>MaximumFileSizeInMBs</i> field. Default value is set to <i>True</i>.
+        /// </summary>
+        public static bool ValidateFileSize { get; set; } = true;
+
+        /// <summary>
+        /// File name Regex to validate. Default value is set to <i>Regex(@"^[\w\-. ]+$", RegexOptions.IgnoreCase)</i>.
+        /// </summary>
+        public static Regex FileNameRegex { get; set; } = new Regex(@"^[\w\-. ]+$", RegexOptions.IgnoreCase);
+
+        /// <summary>
+        /// Maximum file size in MBs. Default value is set to <i>5</i>.
+        /// </summary>
+        public static int MaximumFileSizeInMBs { get; set; } = 5;
+
+        /* Bucket settings */
+        protected internal static int _BucketChunkSizeInMBs = 2; //2097152 B
+        protected internal static IGridFSBucket _Bucket = null;
+
+        /// <summary>
+        /// Configure GridFs bucket chunk size in MBs. Default value is set to <i>2 MB</i>.
+        /// <typeparam name="T">Model of type <b>BaseFile</b>.</typeparam>
+        /// <param name="chunkSize">Chunk size in MBs.</param>
+        /// </summary>
+        public static void Configure<T>(int chunkSize = 2) where T : BaseFile
         {
-            if (!string.IsNullOrWhiteSpace(connectionStringSettingName)) ConnectionStringSettingName = connectionStringSettingName;
-            BucketChunkSizeBytes = bucketChunkSizeBytes;
+            MongoDbContext Context = new MongoDbContext(ConnectionStringSettingName);
+            _Bucket = new GridFSBucket(Context.Database, new GridFSBucketOptions
+            {
+                BucketName = typeof(T).Name.ToLower(),
+                ChunkSizeBytes = (int)Math.Pow(1024, 2) * chunkSize,
+                WriteConcern = WriteConcern.WMajority,
+                ReadPreference = ReadPreference.Secondary
+            });
         }
     }
 }
