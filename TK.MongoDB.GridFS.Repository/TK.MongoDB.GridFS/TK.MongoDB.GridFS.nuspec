@@ -10,7 +10,7 @@
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/tallalkazmi/TK.MongoDB.GridFS.Repository</projectUrl>
     <description>$description$</description>
-    <releaseNotes>Various improvements</releaseNotes>
+    <releaseNotes>Custom exception classes added</releaseNotes>
     <copyright>$copyright$</copyright>
     <tags>mongodb gridfs repository .net c#</tags>
   </metadata>

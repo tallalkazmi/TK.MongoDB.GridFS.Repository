@@ -220,13 +220,13 @@ namespace TK.MongoDB.GridFS.Data
             {
                 double size_limit = Math.Pow(1024, 2) * MaximumFileSizeInMBs;
                 bool isExceeding = obj.Content.Length > size_limit;
-                if (isExceeding) throw new InvalidDataException($"File size is too large, maximum allowed is {MaximumFileSizeInMBs} MB.");
+                if (isExceeding) throw new FileSizeException();
             }
 
             if (ValidateFileName)
             {
                 bool IsValidFilename = FileNameRegex.IsMatch(obj.Filename);
-                if (!IsValidFilename) throw new InvalidDataException($"File name '{obj.Filename}' is not of the correct format.");
+                if (!IsValidFilename) throw new FileNameFormatException(obj.Filename);
             }
 
             string FileContentType = MimeMappingStealer.GetMimeMapping(obj.Filename);
@@ -280,7 +280,7 @@ namespace TK.MongoDB.GridFS.Data
             if (ValidateFileName)
             {
                 bool IsValidFilename = FileNameRegex.IsMatch(newFilename);
-                if (!IsValidFilename) throw new ArgumentException("Filename", $"File name '{newFilename}' is not of the correct format.");
+                if (!IsValidFilename) throw new FileNameFormatException(newFilename);
             }
 
             try
