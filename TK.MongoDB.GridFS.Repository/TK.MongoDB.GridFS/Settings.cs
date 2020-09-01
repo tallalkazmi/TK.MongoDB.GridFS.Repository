@@ -1,6 +1,7 @@
 ﻿using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using TK.MongoDB.GridFS.Models;
 
@@ -41,7 +42,7 @@ namespace TK.MongoDB.GridFS
 
         /* Bucket settings */
         protected internal static int _BucketChunkSizeInMBs = 2; //2097152 B
-        protected internal static IGridFSBucket _Bucket = null;
+        protected internal static Dictionary<string, IGridFSBucket> _Buckets = new Dictionary<string, IGridFSBucket>();
 
         /// <summary>
         /// Configure GridFs bucket chunk size in MBs. Default value is set to <i>2 MB</i>.
@@ -51,13 +52,17 @@ namespace TK.MongoDB.GridFS
         public static void Configure<T>(int chunkSize = 2) where T : BaseFile
         {
             MongoDbContext Context = new MongoDbContext(ConnectionStringSettingName);
-            _Bucket = new GridFSBucket(Context.Database, new GridFSBucketOptions
+
+            string BucketName = typeof(T).Name.ToLower();
+            GridFSBucket Bucket = new GridFSBucket(Context.Database, new GridFSBucketOptions
             {
-                BucketName = typeof(T).Name.ToLower(),
+                BucketName = BucketName,
                 ChunkSizeBytes = (int)Math.Pow(1024, 2) * chunkSize,
                 WriteConcern = WriteConcern.WMajority,
                 ReadPreference = ReadPreference.Secondary
             });
+
+            if (!_Buckets.ContainsKey(BucketName)) _Buckets.Add(BucketName, Bucket);
         }
     }
 }

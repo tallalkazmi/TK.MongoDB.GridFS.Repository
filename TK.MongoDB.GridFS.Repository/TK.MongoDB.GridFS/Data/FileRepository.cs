@@ -28,12 +28,17 @@ namespace TK.MongoDB.GridFS.Data
             if (Context == null) Context = new MongoDbContext(ConnectionStringSettingName);
             if (Bucket == null)
             {
-                if (_Bucket != null) Bucket = _Bucket;
+                string BucketName = typeof(T).Name.ToLower();
+                bool found = _Buckets.TryGetValue(BucketName, out IGridFSBucket _Bucket);
+                if (found)
+                {
+                    Bucket = _Bucket;
+                }
                 else
                 {
                     Bucket = new GridFSBucket(Context.Database, new GridFSBucketOptions
                     {
-                        BucketName = typeof(T).Name.ToLower(),
+                        BucketName = BucketName,
                         ChunkSizeBytes = (int)Math.Pow(1024, 2) * _BucketChunkSizeInMBs,
                         WriteConcern = WriteConcern.WMajority,
                         ReadPreference = ReadPreference.Secondary
