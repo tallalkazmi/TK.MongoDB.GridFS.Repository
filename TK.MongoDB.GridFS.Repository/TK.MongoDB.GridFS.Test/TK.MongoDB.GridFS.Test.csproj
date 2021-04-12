@@ -119,6 +119,7 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="Files\Omega.png" />
+    <Content Include="Files\LargeFile.jpg" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

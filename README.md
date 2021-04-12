@@ -16,25 +16,6 @@ Repository pattern implementation of MongoDB GridFS in .NET Framework
    Settings.ConnectionStringSettingName = "MongoDocConnection";
    ```
 
-2. Default behavior is to always validate file name before inserting against the regex `^[\w\-. ]+$`, but this can be changed by setting the following fields:
-
-   ```c#
-   Settings.ValidateFileName = false;
-   Settings.FileNameRegex = new Regex(@"^[\w\-. ]+$", RegexOptions.IgnoreCase);
-   ```
-
-3. Default behavior is to always check for file size before inserting with a maximum file size of 5 MB, but this can be changed by setting the following fields:
-
-   ```c#
-   Settings.ValidateFileSize = false;
-   Settings.MaximumFileSizeInMBs = 5;
-   ```
-
-4. You can configure *chunk size* for each bucket by using the method below, default setting will create a bucket with *chunk size* of 2 MB. 
-
-   ```c#
-   Settings.Configure<Document>(2);
-   ```
 
 #### Models
 
@@ -44,6 +25,55 @@ Create a document model by inheriting `abstract` class `BaseFile​` to use in r
 public class Image : BaseFile
 {
     public bool isDisplay { get; set; }
+}
+```
+
+###### Bucket Attribute
+
+You can configure the GridFS bucket attributes by decoration the model with `Bucket` attribute, for example:
+
+```c#
+[Bucket(PluralizeBucketName = false, MaximumFileSizeInMBs = 1, BucketChunkSizeInMBs = 1)]
+public class Document : BaseFile
+{
+	/*...*/
+}
+```
+
+The `Bucket` attribute has the following properties that you can set:
+
+```c#
+public class BucketAttribute : Attribute
+{
+    /// <summary>
+    /// Pluralize bucket's mame. Default value is set to True.
+    /// </summary>
+    public bool PluralizeBucketName { get; set; }
+
+    /// <summary>
+    /// Validate file name on insert and update from FileNameRegex field. Default value is set to True.
+    /// </summary>
+    public bool ValidateFileName { get; set; }
+
+    /// <summary>
+    /// Validate file size on insert from MaximumFileSizeInMBs field. Default value is set to True.
+    /// </summary>
+    public bool ValidateFileSize { get; set; }
+
+    /// <summary>
+    /// File name Regex to validate. Default value is set to Regex(@"^[\w\-. ]+$", RegexOptions.IgnoreCase).
+    /// </summary>
+    public Regex FileNameRegex { get; set; }
+
+    /// <summary>
+    /// Maximum file size in MBs. Default value is set to 5.
+    /// </summary>
+    public int MaximumFileSizeInMBs { get; set; }
+
+    /// <summary>
+    /// GridFS bucket chunk size in MBs. Default value is set to 2.
+    /// </summary>
+    public int BucketChunkSizeInMBs { get; set; }
 }
 ```
 

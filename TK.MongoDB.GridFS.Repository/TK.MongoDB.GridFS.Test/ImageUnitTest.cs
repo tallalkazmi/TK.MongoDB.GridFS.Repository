@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MongoDB.Bson;
+using TK.MongoDB.GridFS.Classes;
 using TK.MongoDB.GridFS.Test.Models;
 
 namespace TK.MongoDB.GridFS.Test
@@ -14,7 +15,6 @@ namespace TK.MongoDB.GridFS.Test
         public ImageUnitTest()
         {
             Settings.ConnectionStringSettingName = "MongoDocConnection";
-            Settings.Configure<Image>(1);
         }
 
         [TestMethod]
@@ -66,6 +66,22 @@ namespace TK.MongoDB.GridFS.Test
             Assert.AreNotEqual(null, Id);
 
             Console.WriteLine($"Inserted document Id: {Id}");
+        }
+
+        [TestMethod]
+        public void InsertLargeFile()
+        {
+            byte[] fileContent = File.ReadAllBytes("../../Files/LargeFile.jpg");
+
+            DateTime now = DateTime.UtcNow;
+            Image img = new Image()
+            {
+                Filename = $"LargeFile-{now.Year}{now.Month:D2}{now.Day:D2}.jpg",
+                Content = fileContent,
+                IsDisplay = false
+            };
+
+            Assert.ThrowsException<FileSizeException>(() => { string id = ImageRepository.Insert(img); });
         }
 
         [TestMethod]
