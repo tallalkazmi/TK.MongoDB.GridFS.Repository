@@ -10,7 +10,7 @@ namespace TK.MongoDB.GridFS.Attributes
     public class BucketAttribute : Attribute
     {
         /// <summary>
-        /// Pluralize bucket's mame.  Default value is set to <i>True</i>.
+        /// Pluralize bucket's mame. Default value is set to <i>True</i>.
         /// </summary>
         public bool PluralizeBucketName { get; set; } = true;
 
