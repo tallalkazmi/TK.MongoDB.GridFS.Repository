@@ -15,7 +15,6 @@ namespace TK.MongoDB.GridFS.Test
         public ImageUnitTest()
         {
             Settings.ConnectionStringSettingName = "MongoDocConnection";
-            Settings.Configure<Image>(1);
         }
 
         [TestMethod]

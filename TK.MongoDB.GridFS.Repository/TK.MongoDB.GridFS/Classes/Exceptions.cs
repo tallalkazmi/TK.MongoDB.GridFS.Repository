@@ -34,8 +34,8 @@ namespace TK.MongoDB.GridFS.Classes
         /// <summary>
         /// The exception that is thrown when an input file size is greater than the specified limit.
         /// </summary>
-        public FileSizeException()
-            : base($"File size is too large, maximum allowed is {Settings.MaximumFileSizeInMBs} MB.")
+        public FileSizeException(int size)
+            : base($"File size is too large, maximum allowed is {size} MB.")
         {
         }
 
