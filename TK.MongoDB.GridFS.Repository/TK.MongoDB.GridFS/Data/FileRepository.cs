@@ -18,7 +18,7 @@ using System.Globalization;
 namespace TK.MongoDB.GridFS.Data
 {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-    public class FileRepository<T> : Settings, IFileRepository<T> where T : BaseFile
+    public class FileRepository<T> : IFileRepository<T> where T : BaseFile
     {
         private readonly MongoDbContext Context;
         private readonly Type ObjectType;
@@ -32,6 +32,7 @@ namespace TK.MongoDB.GridFS.Data
         private Regex FileNameRegex;
         private int MaximumFileSizeInMBs;
         private int BucketChunkSizeInMBs;
+        private string ConnectionStringName;
 
         protected IGridFSBucket Bucket { get; private set; }
 
@@ -41,7 +42,7 @@ namespace TK.MongoDB.GridFS.Data
             ObjectType = typeof(T);
             SetBucketAttributes(ObjectType);
 
-            if (Context == null) Context = new MongoDbContext(ConnectionStringSettingName);
+            if (Context == null) Context = new MongoDbContext(ConnectionStringName);
             if (Bucket == null)
             {
                 string BucketName;
@@ -745,6 +746,7 @@ namespace TK.MongoDB.GridFS.Data
                 FileNameRegex = bucketAttribute.FileNameRegex;
                 MaximumFileSizeInMBs = bucketAttribute.MaximumFileSizeInMBs;
                 BucketChunkSizeInMBs = bucketAttribute.BucketChunkSizeInMBs;
+                ConnectionStringName = bucketAttribute.ConnectionStringName;
             }
             else
             {
@@ -755,6 +757,7 @@ namespace TK.MongoDB.GridFS.Data
                 FileNameRegex = bucketAttribute.FileNameRegex;
                 MaximumFileSizeInMBs = bucketAttribute.MaximumFileSizeInMBs;
                 BucketChunkSizeInMBs = bucketAttribute.BucketChunkSizeInMBs;
+                ConnectionStringName = bucketAttribute.ConnectionStringName;
             }
         }
     }

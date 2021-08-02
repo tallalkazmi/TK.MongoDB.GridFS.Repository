@@ -38,5 +38,10 @@ namespace TK.MongoDB.GridFS.Attributes
         /// GridFS bucket chunk size in MBs. Default value is set to <i>2</i>.
         /// </summary>
         public int BucketChunkSizeInMBs { get; set; } = 2; //2097152 B
+
+        /// <summary>
+        /// Connection String name from *.config file. Default value is set from <i>Settings.ConnectionStringSettingName</i>.
+        /// </summary>
+        public string ConnectionStringName { get; set; } = Settings.ConnectionStringSettingName;
     }
 }
