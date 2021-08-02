@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>TK.MongoDB.GridFS.Repository</id>
-    <version>$version$</version>
+    <version>$version$-rc1</version>
     <title>TK.MongoDB.GridFS.Repository</title>
     <authors>Tallal Kazmi</authors>
     <owners>$author$</owners>
@@ -10,7 +10,7 @@
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/tallalkazmi/TK.MongoDB.GridFS.Repository</projectUrl>
     <description>$description$</description>
-    <releaseNotes>Async methods added and most settings variables moved to BucketAttribute class</releaseNotes>
+    <releaseNotes>ConnectionStringName added to BucketAttributes</releaseNotes>
     <copyright>$copyright$</copyright>
     <tags>mongodb gridfs repository .net c#</tags>
   </metadata>
