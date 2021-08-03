@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>TK.MongoDB.GridFS.Repository</id>
-    <version>$version$-rc1</version>
+    <version>$version$</version>
     <title>TK.MongoDB.GridFS.Repository</title>
     <authors>Tallal Kazmi</authors>
     <owners>$author$</owners>
