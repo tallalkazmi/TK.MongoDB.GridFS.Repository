@@ -68,6 +68,11 @@ public class BucketAttribute : Attribute
     /// GridFS bucket chunk size in MBs. Default value is set to 2.
     /// </summary>
     public int BucketChunkSizeInMBs { get; set; }
+    
+    /// <summary>
+    /// Connection String name from *.config file. Default value is set from <i>Settings.ConnectionStringSettingName</i>.
+    /// </summary>
+    public string ConnectionStringName { get; set; };
 }
 ```
 
