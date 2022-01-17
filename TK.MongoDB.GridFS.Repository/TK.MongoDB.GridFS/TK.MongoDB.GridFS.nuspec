@@ -10,7 +10,7 @@
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/tallalkazmi/TK.MongoDB.GridFS.Repository</projectUrl>
     <description>$description$</description>
-    <releaseNotes>ConnectionStringName added to BucketAttributes</releaseNotes>
+    <releaseNotes>Dependent packages updated</releaseNotes>
     <copyright>$copyright$</copyright>
     <tags>mongodb gridfs repository .net c#</tags>
   </metadata>
