@@ -25,9 +25,9 @@ namespace TK.MongoDB.GridFS.Attributes
         public bool ValidateFileSize { get; set; } = true;
 
         /// <summary>
-        /// File name Regex to validate. Default value is set to <i>Regex(@"^[\w\-. ]+$", RegexOptions.IgnoreCase)</i>.
+        /// File name Regex to validate. Default value is set to <i>Regex(@"^[\w\-. ()\[\]]+$", RegexOptions.IgnoreCase)</i>.
         /// </summary>
-        public Regex FileNameRegex { get; set; } = new Regex(@"^[\w\-. ]+$", RegexOptions.IgnoreCase);
+        public Regex FileNameRegex { get; set; } = new Regex(@"^[\w\-. ()\[\]]+$", RegexOptions.IgnoreCase);
 
         /// <summary>
         /// Maximum file size in MBs. Default value is set to <i>5</i>.
